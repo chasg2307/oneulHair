@@ -22,7 +22,8 @@ API_URL_KEYWORDS = ("booking", "reservation")
 DIAG_LEVEL = ((os.getenv("ONEUL_DIAG") or "runtime").strip().lower() or "runtime")
 DIAG_ALL = DIAG_LEVEL == "all"
 PROJECT_DIR = Path(__file__).resolve().parent
-DEFAULT_CONF_PATH = PROJECT_DIR.parent / "aa.conf"
+DEFAULT_CONF_PATH = PROJECT_DIR.parent / "oneulhair.conf"
+EDGE_CHANNEL = "msedge"
 
 
 def _expand_path(path_value: str):
@@ -31,7 +32,7 @@ def _expand_path(path_value: str):
 
 
 def _resolve_config_path(conf_path: str = ""):
-    """설정 파일 경로를 결정합니다. 기본값은 프로젝트 상위 폴더의 aa.conf 입니다."""
+    """설정 파일 경로를 결정합니다. 기본값은 프로젝트 상위 폴더의 oneulhair.conf 입니다."""
     env_conf = _expand_path(os.getenv("ONEUL_CONF_PATH", ""))
     raw = (env_conf or conf_path or str(DEFAULT_CONF_PATH)).strip()
     candidate = Path(_expand_path(raw))
@@ -57,19 +58,6 @@ def _get_first_option(parser, sections, option, fallback=""):
         if parser.has_option(section, option):
             return parser.get(section, option, fallback=fallback).strip()
     return fallback
-
-
-def _normalize_browser_name(browser_name: str):
-    """설정값을 edge/chrome 중 하나로 정규화합니다."""
-    name = (browser_name or "").strip().lower()
-    if name in ("chrome", "google-chrome", "googlechrome"):
-        return "chrome"
-    return "edge"
-
-
-def _resolve_browser_channel(browser_name: str):
-    """Playwright channel 이름으로 변환합니다."""
-    return "chrome" if browser_name == "chrome" else "msedge"
 
 
 def _parse_yyyymmdd(value: str):
@@ -156,51 +144,35 @@ def _load_config(conf_path: str = ""):
     service_account_file = _resolve_path_from_conf(conf_file, service_account_file_raw)
     spreadsheet_name = parser.get("google", "spreadsheet_name", fallback="").strip() or project_name
 
-    browser_name = _normalize_browser_name(
+    configured_browser = parser.get(
+        "browser",
+        "browser_name",
+        fallback=parser.get("browser", "browser", fallback="edge"),
+    ).strip().lower()
+    if configured_browser and configured_browser not in {"edge", "msedge", "microsoft-edge"}:
+        print(f"[WARN] browser={configured_browser} 설정은 지원하지 않습니다. Edge(msedge)로 고정 실행합니다.")
+
+    browser_channel = EDGE_CHANNEL
+    browser_user_data_dir = _resolve_path_from_conf(
+        conf_file,
         parser.get(
             "browser",
-            "browser_name",
-            fallback=parser.get("browser", "browser", fallback="edge"),
-        )
+            "browser_user_data_dir",
+            fallback=parser.get(
+                "browser",
+                "edge_user_data_dir",
+                fallback="~/AppData/Local/Microsoft/Edge/User Data",
+            ),
+        ),
     )
-    browser_channel = _resolve_browser_channel(browser_name)
-
-    if parser.has_option("browser", "browser_user_data_dir"):
-        browser_user_data_dir = _resolve_path_from_conf(
-            conf_file,
-            parser.get("browser", "browser_user_data_dir"),
-        )
-    else:
-        if browser_name == "chrome":
-            browser_user_data_dir = _resolve_path_from_conf(
-                conf_file,
-                parser.get(
-                    "browser",
-                    "chrome_user_data_dir",
-                    fallback="~/AppData/Local/Google/Chrome/User Data",
-                ),
-            )
-        else:
-            browser_user_data_dir = _resolve_path_from_conf(
-                conf_file,
-                parser.get(
-                    "browser",
-                    "edge_user_data_dir",
-                    fallback="~/AppData/Local/Microsoft/Edge/User Data",
-                ),
-            )
-
-    if parser.has_option("browser", "browser_profile_directory"):
-        browser_profile_directory = parser.get("browser", "browser_profile_directory").strip() or "Default"
-    else:
-        if browser_name == "chrome":
-            browser_profile_directory = (
-                parser.get("browser", "chrome_profile_directory", fallback="Default").strip() or "Default"
-            )
-        else:
-            browser_profile_directory = (
-                parser.get("browser", "edge_profile_directory", fallback="Default").strip() or "Default"
-            )
+    browser_profile_directory = (
+        parser.get(
+            "browser",
+            "browser_profile_directory",
+            fallback=parser.get("browser", "edge_profile_directory", fallback="Default"),
+        ).strip()
+        or "Default"
+    )
     headless = parser.getboolean("browser", "headless", fallback=True)
     naver_id = (
         os.getenv("ONEUL_NAVER_ID", "").strip()
@@ -225,7 +197,6 @@ def _load_config(conf_path: str = ""):
         "end_iso_utc": end_iso_utc,
         "service_account_file": service_account_file,
         "spreadsheet_name": spreadsheet_name,
-        "browser_name": browser_name,
         "browser_channel": browser_channel,
         "browser_user_data_dir": browser_user_data_dir,
         "browser_profile_directory": browser_profile_directory,
@@ -274,6 +245,7 @@ def _launch_context_with_fallback(playwright_obj, cfg, purpose: str):
     launch_args = [f"--profile-directory={cfg['browser_profile_directory']}"]
     base_root = _resolve_browser_user_data_dir(cfg)
     base_root.mkdir(parents=True, exist_ok=True)
+    used_fallback = False
 
     try:
         context = playwright_obj.chromium.launch_persistent_context(
@@ -283,17 +255,17 @@ def _launch_context_with_fallback(playwright_obj, cfg, purpose: str):
             args=launch_args,
         )
         return context, None, "persistent"
-    except Exception as e:
-        _diag(f"[실행진단/{purpose}] persistent context 실패: {e}")
+    except Exception:
+        used_fallback = True
 
     # headless 환경 + 기본 프로필 잠금/충돌 대응: 임시 세션으로 수집 시도
     try:
         browser = playwright_obj.chromium.launch(channel=cfg["browser_channel"], headless=cfg["headless"])
         context = browser.new_context()
-        _diag(
-            f"[실행진단/{purpose}] 임시 context fallback 성공 "
-            f"(기본 프로필 쿠키 미사용, conf 자격증명 자동로그인 경로 사용)"
-        )
+        if used_fallback:
+            print(
+                f"[WARN] [실행진단/{purpose}] 기본 프로필 실행 실패로 임시 세션으로 계속합니다."
+            )
         return context, browser, "ephemeral"
     except Exception as e:
         _diag(f"[실행진단/{purpose}] 임시 context fallback 실패: {e}")
@@ -699,7 +671,7 @@ def _collect_items_from_api_responses(api_responses, cfg):
 
 
 def _resolve_browser_user_data_dir(cfg):
-    """선택된 브라우저의 user data 경로를 반환합니다."""
+    """Edge user data 경로를 반환합니다."""
     return Path(cfg["browser_user_data_dir"])
 
 
@@ -869,12 +841,12 @@ def main():
         json_fields = list(items[0].keys())
 
     if not json_fields:
-        print("기록할 필드가 없습니다. aa.conf의 json_fields를 확인하세요.")
+        print("기록할 필드가 없습니다. oneulhair.conf의 json_fields를 확인하세요.")
         return
 
     sheet_fields = cfg["sheet_fields"] if cfg["sheet_fields"] else list(json_fields)
     if len(sheet_fields) != len(json_fields):
-        print("aa.conf의 sheet_fields와 json_fields 개수가 다릅니다.")
+        print("oneulhair.conf의 sheet_fields와 json_fields 개수가 다릅니다.")
         return
 
     _diagnose_field_quality(items, json_fields)
@@ -885,7 +857,7 @@ def main():
         worksheet.update([sheet_fields], "A1")
 
     if "bookingId" not in json_fields:
-        print("aa.conf의 json_fields에 bookingId가 필요합니다.")
+        print("oneulhair.conf의 json_fields에 bookingId가 필요합니다.")
         return
 
     booking_id_idx = json_fields.index("bookingId")

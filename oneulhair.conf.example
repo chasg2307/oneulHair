@@ -1,0 +1,36 @@
+﻿[project]
+name = oneulHair
+
+[naver]
+booking_url = https://partner.booking.naver.com
+rest_url = https://partner.booking.naver.com/api/businesses/867272/bookings?bizItemTypes=STANDARD&bookingStatusCodes=&dateDropdownType=MONTH&dateFilter=USEDATE&maxDays=31&nPayChargedStatusCodes=&orderBy=&orderByStartDate=ASC&paymentStatusCodes=&searchValue=&isDetail=false&page=0&size=5000&totalPage=1&name=오늘,헤어&nPayRegStatusCode=PA01&businessCategory=DL07&businessTypeId=13&forceOpenCalendar=true
+# YYYYMMDD 형식, 비워두면 현재 월 자동 범위(1일 00:00 ~ 말일 23:50, KST)를 사용합니다.
+startDateTime =
+endDateTime =
+
+# sheet_fields: Google Sheet 헤더명
+# json_fields: JSON 추출 경로(순서 1:1 매핑)
+sheet_fields = 예약번호,이름,예약시간,담당자,시술명,가격,요청사항,핸드폰번호,완료예약건수,상태,노쇼,블랙리스트
+json_fields = bookingId,name,snapshotJson.startDateTime,bizItemName,@procedure,price,requestMessage,phone,completedCount,@booking_state,noShowCount,isBlacklist
+
+[google]
+service_account_file = ./oneulHair.json
+spreadsheet_name = 오늘헤어
+
+[browser]
+# Browser engine: edge(default) or chrome
+browser = edge
+
+# Browser user data path (set to Chrome path when browser=chrome)
+browser_user_data_dir = %LOCALAPPDATA%\Microsoft\Edge\User Data
+
+# Browser profile folder name inside user data dir (main profile = Default)
+browser_profile_directory = Default
+
+# hidden 모드에서 페이지 실행 (true/false)
+headless = true
+manual_login_timeout_sec = 180
+
+# 네이버 ID/PW
+naver_id = 
+naver_pw = 
