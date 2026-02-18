@@ -2,11 +2,21 @@
 setlocal
 cd /d "%~dp0"
 
-set "EXE_PATH=%~dp0oneulHair\oneulHair.exe"
+set "EXE_PATH="
 set "CONF_PATH=%~dp0oneulhair.conf"
 
-if not exist "%EXE_PATH%" (
-  echo [ERROR] Executable not found: %EXE_PATH%
+for /d %%D in ("%~dp0*") do (
+  if exist "%%~fD\*.exe" (
+    for %%E in ("%%~fD\*.exe") do (
+      set "EXE_PATH=%%~fE"
+      goto :exe_found
+    )
+  )
+)
+
+:exe_found
+if not defined EXE_PATH (
+  echo [ERROR] Executable not found under release folder.
   echo Run build_onedir.ps1 first.
   pause
   exit /b 1

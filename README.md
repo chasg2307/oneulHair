@@ -54,12 +54,12 @@ powershell -ExecutionPolicy Bypass -File .\build_onedir.ps1
 ```
 
 생성물:
-- `release\oneulHair\oneulHair.exe`
+- `release\<project_name>\<project_name>.exe` (`oneulhair.conf.example`의 `[project] name` 기준)
 - `release\oneulhair.conf` (예시 설정 파일)
 - `release\run.bat` (고객 실행 스크립트)
 
 ### 1-1) 코드 변경 시 반영 방법
-- `PyInstaller --onedir`에서는 코드가 `oneulHair.exe`에 포함되므로 `release` 안의 `main.py`만 교체해도 반영되지 않습니다.
+- `PyInstaller --onedir`에서는 코드가 `<project_name>.exe`에 포함되므로 `release` 안의 `main.py`만 교체해도 반영되지 않습니다.
 - 코드/설정 로직을 바꿨다면 아래 명령으로 반드시 재빌드하세요.
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build_onedir.ps1
@@ -78,8 +78,8 @@ release\
   oneulhair.conf
   oneulHair.json
   run.bat
-  oneulHair\
-    oneulHair.exe
+  <project_name>\
+    <project_name>.exe
 ```
 
 `oneulhair.conf` 예:
