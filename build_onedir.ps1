@@ -29,14 +29,29 @@ if ([string]::IsNullOrWhiteSpace($appName)) {
 }
 
 if (-not (Test-Path ".venv\Scripts\python.exe")) {
+    $createdVenv = $false
     if (Get-Command py -ErrorAction SilentlyContinue) {
-        & py -3.11 -m venv .venv
-    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
-        & python -m venv .venv
-    } else {
-        throw "Python not found. Install Python 3.11+ on the build machine."
+        foreach ($pyArgs in @(
+            @("-3.11", "-m", "venv", ".venv"),
+            @("-3", "-m", "venv", ".venv"),
+            @("-m", "venv", ".venv")
+        )) {
+            & py @pyArgs
+            if ($LASTEXITCODE -eq 0) {
+                $createdVenv = $true
+                break
+            }
+        }
     }
-    if ($LASTEXITCODE -ne 0) { throw "Failed to create virtual environment." }
+    if (-not $createdVenv -and (Get-Command python -ErrorAction SilentlyContinue)) {
+        & python -m venv .venv
+        if ($LASTEXITCODE -eq 0) {
+            $createdVenv = $true
+        }
+    }
+    if (-not $createdVenv) {
+        throw "Python not found. Install Python 3.11+ (or any Python 3.x) on the build machine."
+    }
 }
 
 $venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
