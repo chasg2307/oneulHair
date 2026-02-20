@@ -22,7 +22,7 @@ API_URL_KEYWORDS = ("booking", "reservation")
 DIAG_LEVEL = ((os.getenv("ONEUL_DIAG") or "runtime").strip().lower() or "runtime")
 DIAG_ALL = DIAG_LEVEL == "all"
 PROJECT_DIR = Path(__file__).resolve().parent
-DEFAULT_CONF_PATH = PROJECT_DIR.parent / "oneulhair.conf"
+DEFAULT_CONF_PATH = PROJECT_DIR.parent / "autohair.conf"
 EDGE_CHANNEL = "msedge"
 
 
@@ -32,7 +32,7 @@ def _expand_path(path_value: str):
 
 
 def _resolve_config_path(conf_path: str = ""):
-    """설정 파일 경로를 결정합니다. 기본값은 프로젝트 상위 폴더의 oneulhair.conf 입니다."""
+    """설정 파일 경로를 결정합니다. 기본값은 프로젝트 상위 폴더의 autohair.conf 입니다."""
     env_conf = _expand_path(os.getenv("ONEUL_CONF_PATH", ""))
     raw = (env_conf or conf_path or str(DEFAULT_CONF_PATH)).strip()
     candidate = Path(_expand_path(raw))
@@ -127,7 +127,7 @@ def _load_config(conf_path: str = ""):
     parser = configparser.ConfigParser(interpolation=None)
     parser.read(str(conf_file), encoding="utf-8-sig")
 
-    project_name = parser.get("project", "name", fallback="oneulHair").strip() or "oneulHair"
+    project_name = parser.get("project", "name", fallback="autoHair").strip() or "autoHair"
 
     booking_url = parser.get("naver", "booking_url")
     rest_url = parser.get("naver", "rest_url", fallback="").strip()
@@ -841,12 +841,12 @@ def main():
         json_fields = list(items[0].keys())
 
     if not json_fields:
-        print("기록할 필드가 없습니다. oneulhair.conf의 json_fields를 확인하세요.")
+        print("기록할 필드가 없습니다. autohair.conf의 json_fields를 확인하세요.")
         return
 
     sheet_fields = cfg["sheet_fields"] if cfg["sheet_fields"] else list(json_fields)
     if len(sheet_fields) != len(json_fields):
-        print("oneulhair.conf의 sheet_fields와 json_fields 개수가 다릅니다.")
+        print("autohair.conf의 sheet_fields와 json_fields 개수가 다릅니다.")
         return
 
     _diagnose_field_quality(items, json_fields)
@@ -857,7 +857,7 @@ def main():
         worksheet.update([sheet_fields], "A1")
 
     if "bookingId" not in json_fields:
-        print("oneulhair.conf의 json_fields에 bookingId가 필요합니다.")
+        print("autohair.conf의 json_fields에 bookingId가 필요합니다.")
         return
 
     booking_id_idx = json_fields.index("bookingId")
@@ -913,3 +913,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

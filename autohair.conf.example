@@ -1,5 +1,5 @@
 ﻿[project]
-name = oneulHair
+name = autoHair
 
 [naver]
 booking_url = https://partner.booking.naver.com
@@ -14,7 +14,7 @@ sheet_fields = 예약번호,이름,예약시간,담당자,시술명,가격,요�
 json_fields = bookingId,name,snapshotJson.startDateTime,bizItemName,@procedure,price,requestMessage,phone,completedCount,@booking_state,noShowCount,isBlacklist
 
 [google]
-service_account_file = ./oneulHair.json
+service_account_file = ./autoHair.json
 spreadsheet_name = 오늘헤어
 
 [browser]
@@ -34,3 +34,4 @@ manual_login_timeout_sec = 180
 # 네이버 ID/PW
 naver_id = 
 naver_pw = 
+

@@ -1,9 +1,9 @@
-@echo off
+﻿@echo off
 setlocal
 cd /d "%~dp0"
 
 set "EXE_PATH="
-set "CONF_PATH=%~dp0oneulhair.conf"
+set "CONF_PATH=%~dp0autohair.conf"
 
 for /d %%D in ("%~dp0*") do (
   if exist "%%~fD\*.exe" (
@@ -24,7 +24,7 @@ if not defined EXE_PATH (
 
 if not exist "%CONF_PATH%" (
   echo [ERROR] Config file not found: %CONF_PATH%
-  echo Copy and edit oneulhair.conf before running.
+  echo Copy and edit autohair.conf before running.
   pause
   exit /b 1
 )
@@ -41,3 +41,4 @@ if not "%EXIT_CODE%"=="0" (
 )
 
 exit /b %EXIT_CODE%
+

@@ -1,4 +1,4 @@
-﻿# oneulHair
+﻿# autoHair
 
 네이버 예약 데이터를 수집해 구글 스프레드시트에 적재하는 자동화 프로젝트입니다.
 
@@ -18,15 +18,15 @@ python -m pip install -r requirements.txt
 Edge 채널(`msedge`)은 시스템에 설치된 Microsoft Edge를 사용합니다.
 
 ### 2) 설정 파일 준비
-기본 설정 파일 경로는 프로젝트 상위 폴더의 `../oneulhair.conf` 입니다.
+기본 설정 파일 경로는 프로젝트 상위 폴더의 `../autohair.conf` 입니다.
 
 ```powershell
-Copy-Item .\oneulhair.conf.example ..\oneulhair.conf
+Copy-Item .\autohair.conf.example ..\autohair.conf
 ```
 
 필요 시 환경변수로 설정 파일 경로를 강제할 수 있습니다.
 ```powershell
-$env:ONEUL_CONF_PATH="D:\code\oneulhair.conf"
+$env:ONEUL_CONF_PATH="D:\code\autohair.conf"
 ```
 
 필수 설정:
@@ -54,8 +54,8 @@ powershell -ExecutionPolicy Bypass -File .\build_onedir.ps1
 ```
 
 생성물:
-- `release\<project_name>\<project_name>.exe` (`oneulhair.conf.example`의 `[project] name` 기준)
-- `release\oneulhair.conf` (예시 설정 파일)
+- `release\<project_name>\<project_name>.exe` (`autohair.conf.example`의 `[project] name` 기준)
+- `release\autohair.conf` (예시 설정 파일)
 - `release\run.bat` (고객 실행 스크립트)
 
 ### 1-1) 코드 변경 시 반영 방법
@@ -68,25 +68,25 @@ powershell -ExecutionPolicy Bypass -File .\build_onedir.ps1
 
 ### 2) 고객 전달 전 준비
 `release` 폴더에서 다음을 맞춘 뒤 전달합니다.
-- `oneulhair.conf` 값 입력
+- `autohair.conf` 값 입력
 - `service_account_file` 경로 확인
 - 서비스 계정 키 JSON 파일 위치 확인
 
 권장 구조:
 ```text
 release\
-  oneulhair.conf
-  oneulHair.json
+  autohair.conf
+  autoHair.json
   run.bat
   <project_name>\
     <project_name>.exe
 ```
 
-`oneulhair.conf` 예:
+`autohair.conf` 예:
 ```ini
 [google]
-service_account_file = ./oneulHair.json
-spreadsheet_name = oneulHair
+service_account_file = ./autoHair.json
+spreadsheet_name = autoHair
 ```
 
 ### 3) 고객 실행
@@ -99,13 +99,13 @@ run.bat
 run.bat --setup-login
 ```
 
-`run.bat`는 `ONEUL_CONF_PATH`를 자동 설정하므로 `release\oneulhair.conf`를 기준으로 실행됩니다.
+`run.bat`는 `ONEUL_CONF_PATH`를 자동 설정하므로 `release\autohair.conf`를 기준으로 실행됩니다.
 
 ## 트러블슈팅
 
 ### 설정 파일이 없습니다
-예: `설정 파일이 없습니다: D:\code\oneulhair.conf ...`
-- `oneulhair.conf` 실제 위치 확인
+예: `설정 파일이 없습니다: D:\code\autohair.conf ...`
+- `autohair.conf` 실제 위치 확인
 - 필요 시 `ONEUL_CONF_PATH`로 경로 지정
 
 ### 구글시트 파일 api키 이상.
@@ -122,4 +122,5 @@ run.bat --setup-login
   - `ONEUL_NAVER_ID`, `ONEUL_NAVER_PW`
 - 키 파일 경로도 환경변수 사용 가능
   - `ONEUL_GOOGLE_SERVICE_ACCOUNT_FILE`
-- 실제 비밀정보 파일(`oneulhair.conf`, 키 JSON)은 저장소 커밋 금지
+- 실제 비밀정보 파일(`autohair.conf`, 키 JSON)은 저장소 커밋 금지
+

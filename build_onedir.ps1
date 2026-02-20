@@ -1,11 +1,11 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $repoRoot
 
-$defaultAppName = "oneulHair"
+$defaultAppName = "autoHair"
 $appName = $defaultAppName
-$confExamplePath = Join-Path $repoRoot "oneulhair.conf.example"
+$confExamplePath = Join-Path $repoRoot "autohair.conf.example"
 if (Test-Path $confExamplePath) {
     $inProjectSection = $false
     foreach ($line in Get-Content -Path $confExamplePath -Encoding UTF8) {
@@ -79,7 +79,7 @@ if (Test-Path $releaseAppDir) {
 }
 
 Copy-Item -Path (Join-Path $repoRoot "dist\$appName") -Destination $releaseDir -Recurse -Force
-Copy-Item -Path (Join-Path $repoRoot "oneulhair.conf.example") -Destination (Join-Path $releaseDir "oneulhair.conf") -Force
+Copy-Item -Path (Join-Path $repoRoot "autohair.conf.example") -Destination (Join-Path $releaseDir "autohair.conf") -Force
 Copy-Item -Path (Join-Path $repoRoot "run_release.bat") -Destination (Join-Path $releaseDir "run.bat") -Force
 
 Write-Host ""
@@ -87,3 +87,4 @@ Write-Host "Build completed."
 Write-Host "App name: $appName"
 Write-Host "Release folder: $releaseDir"
 Write-Host "Run command: .\release\run.bat"
+

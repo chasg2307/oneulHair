@@ -1,10 +1,10 @@
-﻿# 절대 금지 패턴 (oneulHair)
+﻿# 절대 금지 패턴 (autoHair)
 
 아래는 현재 코드에서 **실제로 발견된 위험 패턴**을 기준으로 만든 금지 목록입니다.
 
 ## 조치 현황 (2026-02-18)
-- 완료: 실제 설정 파일 `oneulhair.conf`를 저장소 바깥(`../oneulhair.conf`)으로 이동하고, 코드 기본 로딩 경로를 상위 폴더로 변경 (`main.py`).
-- 완료: 저장소에는 비밀값 없는 예시 설정만 유지 (`oneulhair.conf.example`).
+- 완료: 실제 설정 파일 `autoHair.conf`를 저장소 바깥(`../autoHair.conf`)으로 이동하고, 코드 기본 로딩 경로를 상위 폴더로 변경 (`main.py`).
+- 완료: 저장소에는 비밀값 없는 예시 설정만 유지 (`autoHair.conf.example`).
 - 완료: 민감 URL/응답 본문 출력 제거 (`main.py`).
 - 완료: 인증 예외를 성공으로 처리하던 로직 제거 (`naverLogin.py`).
 - 완료: `except Exception: pass` 패턴 제거 및 진단 로그 추가 (`main.py`, `naverLogin.py`).
@@ -14,9 +14,9 @@
 
 ## 1) 비밀정보(계정/비밀번호/키 경로) 하드코딩 및 저장소 포함 금지
 - 발견 위치:
-  - `oneulhair.conf:36` (`naver_id = ...`)
-  - `oneulhair.conf:37` (`naver_pw = ...`)
-  - `oneulhair.conf:19` (`service_account_file = ../oneulHair.json`)
+  - `autoHair.conf:36` (`naver_id = ...`)
+  - `autoHair.conf:37` (`naver_pw = ...`)
+  - `autoHair.conf:19` (`service_account_file = ../autoHair.json`)
 - 금지 이유: 계정 탈취, 키 유출, 외부 공유 시 즉시 사고로 이어짐.
 - 절대 금지:
   - 설정 파일에 실계정 ID/PW 평문 저장
@@ -54,7 +54,7 @@
 ## 5) 텍스트 인코딩 깨짐 상태(mojibake) 커밋 금지
 - 발견 위치:
   - `naverLogin.py` 문자열/주석 일부가 깨진 상태로 존재했음
-  - `oneulhair.conf` 주석/값 일부가 깨져 보이는 상태였음
+  - `autoHair.conf` 주석/값 일부가 깨져 보이는 상태였음
 - 금지 이유: 운영 메시지/설정 오해로 장애 대응이 어려워지고, 유지보수 정확도가 크게 떨어짐.
 - 절대 금지:
   - 깨진 문자열 상태 그대로 배포/커밋
